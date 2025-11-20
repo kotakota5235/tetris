@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tetris</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="app-container">
+        <header>
+            <h1>TETRIS</h1>
+        </header>
+
+        <div class="game-wrapper">
+            <div class="game-container">
+                <canvas id="board" class="game-board"></canvas>
+                <div class="overlay" id="pause-overlay">
+                    <div class="overlay-content">
+                        <h2>PAUSED</h2>
+                        <p>Press ESC to Resume</p>
+                    </div>
+                </div>
+                <div class="overlay" id="game-over-overlay" style="display: none;">
+                    <div class="overlay-content">
+                        <h2>GAME OVER</h2>
+                        <p>Score: <span id="final-score">0</span></p>
+                        <button id="restart-btn">Play Again</button>
+                    </div>
+                </div>
+                <div class="overlay" id="start-overlay">
+                    <div class="overlay-content">
+                        <h2>READY?</h2>
+                        <p>Press SPACE or Click to Start</p>
+                        <button id="start-btn">Start Game</button>
+                    </div>
+                </div>
+            </div>
+
+            <aside class="sidebar">
+                <div class="panel score-panel">
+                    <h3>SCORE</h3>
+                    <div class="value" id="score">0</div>
+                </div>
+                <div class="panel level-panel">
+                    <h3>LEVEL</h3>
+                    <div class="value" id="level">1</div>
+                </div>
+                <div class="panel lines-panel">
+                    <h3>LINES</h3>
+                    <div class="value" id="lines">0</div>
+                </div>
+                <div class="panel next-panel">
+                    <h3>NEXT</h3>
+                    <canvas id="next" class="next-piece-board"></canvas>
+                </div>
+
+                <div class="controls-info">
+                    <div class="key-row"><span class="key">←</span><span class="key">→</span> Move</div>
+                    <div class="key-row"><span class="key">↑</span> Rotate</div>
+                    <div class="key-row"><span class="key">↓</span> Soft Drop</div>
+                    <div class="key-row"><span class="key space">Space</span> Hard Drop</div>
+                </div>
+            </aside>
+        </div>
+    </div>
+    <script type="module" src="src/main.js"></script>
+</body>
+
+</html>
