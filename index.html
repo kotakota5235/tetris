@@ -11,6 +11,19 @@
     <link rel="stylesheet" href="style.css">
 </head>
 
+<script>
+    // URL のクエリパラメータ ?sat=○○ を取得
+    const params = new URLSearchParams(location.search);
+    const sat = params.get("sat");
+
+    if (sat) {
+        // HTML 全体の彩度を変更
+        document.documentElement.style.filter = `saturate(${sat}%)`;
+    }
+</script>
+
+
+
 <body>
     <div class="app-container">
         <header>
