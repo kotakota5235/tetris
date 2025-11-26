@@ -54,6 +54,37 @@ export class Piece {
     }
 
     randomizeTetrominoType(noOfTypes) {
-        return Math.floor(Math.random() * noOfTypes + 1);
+        if (!Piece.bag || Piece.bag.length === 0) {
+            this.fillBag(noOfTypes);
+        }
+        const typeId = Piece.bag.pop();
+        Piece.lastTypeId = typeId;
+        return typeId;
+    }
+
+    fillBag(noOfTypes) {
+        const types = [];
+        for (let i = 1; i <= noOfTypes; i++) {
+            types.push(i);
+        }
+
+        // Fisher-Yates shuffle
+        for (let i = types.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [types[i], types[j]] = [types[j], types[i]];
+        }
+
+        // Prevent consecutive duplicates across bags
+        // We pop from the end, so check the last element
+        if (Piece.lastTypeId && types[types.length - 1] === Piece.lastTypeId) {
+            // Swap with the first element
+            [types[0], types[types.length - 1]] = [types[types.length - 1], types[0]];
+        }
+
+        Piece.bag = types;
     }
 }
+
+// Initialize static properties
+Piece.bag = [];
+Piece.lastTypeId = 0;
