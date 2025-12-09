@@ -19,6 +19,7 @@ export class Game {
         this.linesElement = document.getElementById('lines');
         this.levelElement = document.getElementById('level');
         this.finalScoreElement = document.getElementById('final-score');
+        this.timeElement = document.getElementById('time');
 
         this.startOverlay = document.getElementById('start-overlay');
         this.pauseOverlay = document.getElementById('pause-overlay');
@@ -36,6 +37,7 @@ export class Game {
         this.nextPiece = null;
         this.isPlaying = false;
         this.isPaused = false;
+        this.isSessionStarted = false;
 
         this.addEventListener();
         this.reset();
@@ -56,6 +58,15 @@ export class Game {
         };
         this.board.reset();
         this.time = { start: 0, elapsed: 0, level: LEVEL_SPEED[0] };
+
+        // Only reset stopwatch if session hasn't started (first load)
+        if (!this.isSessionStarted) {
+            this.stopwatchStartTime = 0;
+            this.pauseStartTime = 0;
+            this.totalPausedTime = 0;
+            if (this.timeElement) this.timeElement.textContent = '00:00';
+        }
+
         this.updateAccount();
         this.gameOverOverlay.style.display = 'none';
         this.pauseOverlay.style.display = 'none';
@@ -65,9 +76,19 @@ export class Game {
     }
 
     play() {
+        if (this.requestId) {
+            cancelAnimationFrame(this.requestId);
+        }
         this.reset();
         this.isPlaying = true;
         this.startOverlay.style.display = 'none';
+
+        if (!this.isSessionStarted) {
+            this.stopwatchStartTime = performance.now();
+            this.totalPausedTime = 0;
+            this.isSessionStarted = true;
+        }
+
         this.piece = new Piece(this.ctx);
         this.nextPiece = new Piece(this.ctxNext);
         this.nextPiece.ctx = this.ctxNext; // Ensure context is correct for next piece
@@ -76,15 +97,35 @@ export class Game {
     }
 
     animate(now = 0) {
-        if (!this.isPlaying || this.isPaused) return;
+        if (this.isPaused) return;
 
-        this.time.elapsed = now - this.time.start;
-        if (this.time.elapsed > this.time.level) {
-            this.time.start = now;
-            this.drop();
+        // Stopwatch Logic - Always runs if session started
+        if (this.isSessionStarted) {
+            const currentStopwatchTime = now - this.stopwatchStartTime - this.totalPausedTime;
+            const totalSeconds = Math.floor(currentStopwatchTime / 1000);
+
+            // Check for 10 minute limit (600 seconds)
+            if (totalSeconds >= 600) {
+                this.timeElement.textContent = '10:00';
+                if (this.isPlaying) {
+                    this.gameOver();
+                }
+                return; // Stop animation completely at 10 mins
+            }
+
+            this.timeElement.textContent = this.formatTime(totalSeconds);
         }
 
-        this.draw();
+        // Game Logic - Only runs if playing
+        if (this.isPlaying) {
+            this.time.elapsed = now - this.time.start;
+            if (this.time.elapsed > this.time.level) {
+                this.time.start = now;
+                this.drop();
+            }
+            this.draw();
+        }
+
         this.requestId = requestAnimationFrame(this.animate.bind(this));
     }
 
@@ -155,7 +196,7 @@ export class Game {
 
     gameOver() {
         this.isPlaying = false;
-        cancelAnimationFrame(this.requestId);
+        // Do NOT cancel animation frame so timer keeps updating
         this.finalScoreElement.textContent = this.account.score;
         this.gameOverOverlay.style.display = 'flex';
     }
@@ -167,9 +208,11 @@ export class Game {
 
         if (this.isPaused) {
             this.pauseOverlay.style.display = 'flex';
+            this.pauseStartTime = performance.now();
             cancelAnimationFrame(this.requestId);
         } else {
             this.pauseOverlay.style.display = 'none';
+            this.totalPausedTime += performance.now() - this.pauseStartTime;
             this.animate();
         }
     }
@@ -243,5 +286,11 @@ export class Game {
         this.startBtn.addEventListener('click', () => {
             this.play();
         });
+    }
+
+    formatTime(seconds) {
+        const m = Math.floor(seconds / 60);
+        const s = seconds % 60;
+        return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
     }
 }
